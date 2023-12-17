@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         readImgMetaData imgMetaDataReader = new readImgMetaData(this, imageUri);
 
-        List<? extends ImageMetadata.ImageMetadataItem> metadata = imgMetaDataReader.getMetaData();
+        /* List<? extends ImageMetadata.ImageMetadataItem> metadata = imgMetaDataReader.getMetaData();
 
         for (ImageMetadata.ImageMetadataItem item : metadata) {
             Log.d("img", "handleImageMetadata: " + item);
@@ -92,5 +92,10 @@ public class MainActivity extends AppCompatActivity {
             String bar = foo.getText().toString();
             foo.setText(bar + "\n" + item.toString());
         }
+
+        */
+
+        TextView foo = findViewById(R.id.textView2);
+        foo.setText(imgMetaDataReader.getParams());
     }
 }
