@@ -25,6 +25,7 @@ import org.apache.commons.imaging.common.ImageMetadata;
 
 import java.util.List;
 
+import imgMetaData.ParamsCallback;
 import imgMetaData.readImgMetaData;
 
 public class MainActivity extends AppCompatActivity {
@@ -81,21 +82,26 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("SetTextI18n")
     private void handleImageMetadata(Uri imageUri) {
-
+        // Creating an instance of readImgMetaData
         readImgMetaData imgMetaDataReader = new readImgMetaData(this, imageUri);
 
-        /* List<? extends ImageMetadata.ImageMetadataItem> metadata = imgMetaDataReader.getMetaData();
-
-        for (ImageMetadata.ImageMetadataItem item : metadata) {
-            Log.d("img", "handleImageMetadata: " + item);
-            TextView foo = findViewById(R.id.textView2);
-            String bar = foo.getText().toString();
-            foo.setText(bar + "\n" + item.toString());
-        }
-
-        */
-
+        // Reference to your TextView
         TextView foo = findViewById(R.id.textView2);
-        foo.setText(imgMetaDataReader.getParams());
+
+        // Correctly calling getParams on the instance of readImgMetaData
+        imgMetaDataReader.getParams(new ParamsCallback() {
+            @Override
+            public void onCompleted(String params) {
+                // Handle the params here
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Updating the UI; this needs to be done on the main thread
+                        foo.setText(params);
+                    }
+                });
+            }
+        });
     }
+
 }
