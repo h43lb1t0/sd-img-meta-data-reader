@@ -37,8 +37,7 @@ dependencies {
     // Add this line for Apache Commons Imaging
     implementation("org.apache.commons:commons-imaging:1.0-alpha2")
     // Add this line for org.json
-    implementation("org.json:json:20231013")
-    testImplementation("junit:junit:4.13.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.6")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }

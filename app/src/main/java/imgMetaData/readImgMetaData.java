@@ -1,19 +1,28 @@
 package imgMetaData;
 
+
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelStoreOwner;
 
 import org.apache.commons.imaging.ImageInfo;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.common.ImageMetadata;
 
+import civitai.CivitaiJsonReader;
+import helpers.SharedViewModel;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,12 +31,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import androidx.lifecycle.ViewModelProvider;
+import android.app.Activity;
+
+
 import imgMetaData.Parameter;
 
 public class readImgMetaData {
 
     File imageFile;
-    List<? extends ImageMetadata.ImageMetadataItem> metadata;
+    static List<? extends ImageMetadata.ImageMetadataItem> metadata;
 
 
     public readImgMetaData(Context context, Uri imageUri) {
@@ -40,12 +53,17 @@ public class readImgMetaData {
         }
     }
 
-    public void getParams(ParamsCallback callback) {
+    private static void getParams(ParamsCallback callback) {
         StringBuilder params = new StringBuilder();
 
         String unformattedParams = metadata.get(0).toString();
         String oneLineParams = unformattedParams.replaceAll("\\R", " ");
 
+        String[] civitaiRelevantParams = new String[] {
+                Parameter.BASE_MODEL_HASH.name()
+        };
+
+        final ImageMetaData[] imageMetaData = {ImageMetaData.getInstance()};
 
         AtomicInteger asyncTasksCount = new AtomicInteger(0);
         AtomicBoolean isAsyncOperationInvoked = new AtomicBoolean(false);
@@ -56,21 +74,53 @@ public class readImgMetaData {
 
             if (matcher.find() && matcher.groupCount() >= 1) {
 
-                if (p.name().equals("BASE_MODEL_HASH")) {
+                if (Arrays.asList(civitaiRelevantParams).contains(p.name())) {
                     isAsyncOperationInvoked.set(true);
                     asyncTasksCount.incrementAndGet();
+
+                    CivitaiJsonReader civitaiJsonReader = new CivitaiJsonReader();
                     getModelByHash(matcher.group(1), new ModelByHashCallback() {
                         @Override
                         public void onResult(String result) {
-                            params.append(result);
+                            imageMetaData[0] = civitaiJsonReader.getParams(result, imageMetaData[0]);
+
                             // Check if all asynchronous tasks are completed
                             if (asyncTasksCount.decrementAndGet() == 0) {
-                                callback.onCompleted(params.toString());
+                                callback.onCompleted(imageMetaData[0].toString());
                             }
                         }
                     });
                 } else {
-                    params.append(p.name()).append(": ").append(matcher.group(1)).append("\n");
+                    switch (p) {
+                        case POS_PROMPT:
+                            imageMetaData[0].setPosPrompt(matcher.group(1));
+                            break;
+                        case NEG_PROMPT:
+                            imageMetaData[0].setNegPrompt(matcher.group(1));
+                            break;
+                        case STEPS:
+                            imageMetaData[0].setSteps(Integer.parseInt(Objects.requireNonNull(matcher.group(1))));
+                            break;
+                        case SAMPLER:
+                            imageMetaData[0].setSampler(matcher.group(1));
+                            break;
+                        case CFG:
+                            imageMetaData[0].setCfg(Integer.parseInt(Objects.requireNonNull(matcher.group(1))));
+                            break;
+                        case SEED:
+                            imageMetaData[0].setSeed(Long.parseLong(Objects.requireNonNull(matcher.group(1))));
+                            break;
+                        case SIZE:
+                            imageMetaData[0].setSize(matcher.group(1));
+                            break;
+                        case VAE_HASH:
+                            imageMetaData[0].setVaeHash(matcher.group(1));
+                            break;
+                        case UI_VERSION:
+                            imageMetaData[0].setUiVersion(matcher.group(1));
+                            break;
+
+                    };
                 }
 
                 if (!isAsyncOperationInvoked.get()) {
@@ -82,6 +132,24 @@ public class readImgMetaData {
             }
         }
     }
+
+    public static void getParams2(Activity activity) {
+        SharedViewModel sharedViewModel = new ViewModelProvider((ViewModelStoreOwner) activity).get(SharedViewModel.class);
+
+        getParams(new ParamsCallback() {
+            @Override
+            public void onCompleted(String params) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("DATA", "run: " + params);
+                    }
+                });
+            }
+        });
+    }
+
+
 
     public String getPosPrompt() {
         if (metadata == null) {
@@ -99,7 +167,8 @@ public class readImgMetaData {
         }
     }
 
-    private void getModelByHash(String hash, ModelByHashCallback callback) {
+    private static void getModelByHash(String hash, ModelByHashCallback callback) {
+        Log.d("HASH", "getModelByHash: " + hash);
         new Thread(() -> {
             try {
                 OkHttpClient client = new OkHttpClient();

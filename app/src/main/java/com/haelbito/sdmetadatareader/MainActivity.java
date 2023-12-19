@@ -20,24 +20,59 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.viewpager2.widget.ViewPager2;
 
-import org.apache.commons.imaging.common.ImageMetadata;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
-import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
+import helpers.SharedViewModel;
+import helpers.TabsPagerAdapter;
+import imgMetaData.ImageMetaData;
 import imgMetaData.ParamsCallback;
 import imgMetaData.readImgMetaData;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int PICK_IMAGE = 1;
+    private SharedViewModel sharedViewModel;
 
     private ImageView imageView;
+    private ViewPager2 viewPager;
+    private TabLayout tabLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+
+        // Initialize ViewPager and TabLayout here
+        viewPager = findViewById(R.id.viewPager);
+        tabLayout = findViewById(R.id.tabLayout);
+
+        viewPager.setAdapter(new TabsPagerAdapter(this));
+        new TabLayoutMediator(tabLayout, viewPager,
+                (tab, position) -> {
+                    // Set the tab titles here
+                    switch (position) {
+                        case 0:
+                            tab.setText(R.string.gen_data);
+                            break;
+                        case 1:
+                            tab.setText(R.string.model_info);
+                            break;
+                        case 2:
+                            tab.setText(R.string.lora_info);
+                            break;
+                    }
+                }).attach();
+
 
         imageView = findViewById(R.id.imageView);
         imageView.setOnClickListener(new View.OnClickListener() {
@@ -85,23 +120,14 @@ public class MainActivity extends AppCompatActivity {
         // Creating an instance of readImgMetaData
         readImgMetaData imgMetaDataReader = new readImgMetaData(this, imageUri);
 
-        // Reference to your TextView
-        TextView foo = findViewById(R.id.textView2);
 
-        // Correctly calling getParams on the instance of readImgMetaData
-        imgMetaDataReader.getParams(new ParamsCallback() {
-            @Override
-            public void onCompleted(String params) {
-                // Handle the params here
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Updating the UI; this needs to be done on the main thread
-                        foo.setText(params);
-                    }
-                });
-            }
-        });
+        readImgMetaData.getParams2(this);
+        sharedViewModel.setData("");
+        ImageMetaData imageMetaData = ImageMetaData.getInstance();
+        Log.d("DATA", imageMetaData.toString());
+
     }
+
+
 
 }

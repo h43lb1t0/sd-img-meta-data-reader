@@ -1,5 +1,23 @@
 <resources>
     <string name="app_name">SD meta data reader</string>
-    <string name="gen_data">Generation Data:</string>
+    <string name="gen_data_title">Generation Data:</string>
+    <string name="gen_data">Generation Data</string>
+    <string name="model_info">Model</string>
+    <string name="lora_info">LoRa</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</string>
+
+    <string name="pos_prompt">Prompt</string>
+    <string name="neg_prompt">Negative Prompt</string>
+    <string name="sampler">Sampler</string>
+    <string name="steps">Steps</string>
+    <string name="cfg">CFG</string>
+    <string name="seed">Seed</string>
+    <string name="size">Size</string>
+
+    <string name="base_model_name">Model</string>
+    <string name="base_model_version">Version</string>
+    <string name="base_model_sd_version">SD version</string>
+    <string name="base_model_id">Link</string>
 </resources>
 
